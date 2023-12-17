@@ -123,7 +123,7 @@ def p_sample_loop(model: nn.Module, shape, time_steps):
 
     for i in tqdm(reversed(range(0, time_steps)), total=time_steps):
         img = p_sample(
-            model, img, torch.full((batch_size,), i, device=device, dtype=torch.long), i
+            model, img, torch.full((1,), i, device=device, dtype=torch.long), i
         )
         imgs.append(img.cpu().numpy())
 
