@@ -65,5 +65,5 @@ for epoch in tqdm(range(epochs)):
         data_tq.set_description(f'loss={loss.item()}')
 
     torch.save(model.state_dict(), f"./model_{epoch}.bin")
-    samples = sample(model, image_size, batch_size=25, channels=channels)
+    samples = sample(model, time_steps, image_size=image_size, batch_size=25, channels=channels)
     save_image(torch.from_numpy(samples[-1]), str(results_folder / f'sample_{epoch}.png'), nrow=5)
