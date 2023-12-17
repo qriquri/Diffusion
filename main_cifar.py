@@ -16,7 +16,7 @@ dataset = load_dataset("cifar10")
 image_size = 32
 channels = 3
 batch_size = 128
-time_steps = 200
+time_steps = 1000
 
 transform = Compose([
     transforms.RandomHorizontalFlip(),
@@ -46,7 +46,7 @@ summary(model)
 model.to(device)
 
 diffusion = Diffusion(time_steps=time_steps, device=device)
-optimizer = Adam(model.parameters(), lr=1e-3)
+optimizer = Adam(model.parameters(), lr=2e-4)
 
 epochs = 50
 for epoch in tqdm(range(epochs)):
