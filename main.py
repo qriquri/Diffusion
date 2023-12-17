@@ -39,7 +39,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 model = Unet(
     dim=image_size,
     channels=channels,
-    dim_mults=(1, 2, 4,),
+    dim_multi=(1, 2, 4,),
     resnet_block_groups=4,
 )
 summary(model)
