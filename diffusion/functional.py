@@ -107,7 +107,7 @@ def p_sample(model: nn.Module, x: torch.Tensor, t: torch.Tensor, t_index):
         posterior_variance = (
             betas * (1.0 - alphas_cumprod_prev) / (1.0 - alphas_cumprod)
         )
-        posterior_variance_t = extract(posterior_variance)  # σ^2_tを計算
+        posterior_variance_t = extract(posterior_variance, t, x.shape)  # σ^2_tを計算
         noise = torch.rand_like(x)
 
     return model_mean + torch.sqrt(posterior_variance_t) * noise
