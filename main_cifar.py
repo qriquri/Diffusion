@@ -13,7 +13,7 @@ from diffusion.diffusion import Diffusion
 from tqdm.auto import tqdm
 
 dataset = load_dataset("cifar10")
-image_size = 28
+image_size = 32
 channels = 3
 batch_size = 128
 time_steps = 200
