@@ -9,7 +9,7 @@ from torch.optim import Adam
 from torchinfo import summary
 from pathlib import Path
 from diffusion.unet import Unet
-from diffusion.functional import p_losses, sample, compute_noisy_image
+from diffusion.diffusion import Diffusion
 from tqdm.auto import tqdm
 
 dataset = load_dataset("fashion_mnist")
@@ -45,6 +45,7 @@ model = Unet(
 summary(model)
 model.to(device)
 
+diffusion = Diffusion(time_steps=time_steps, device=device)
 optimizer = Adam(model.parameters(), lr=1e-3)
 
 epochs = 10
@@ -57,9 +58,8 @@ for epoch in tqdm(range(epochs)):
         batch = batch["pixel_values"].to(device)
 
         t = torch.randint(1, time_steps, (batch_size,), device=device).long()
-        batch_noisy = compute_noisy_image(batch, t, time_steps=time_steps).detach()
-        
-        loss = p_losses(model, batch_noisy, t, time_steps=time_steps)
+
+        loss = diffusion.p_losses(model, batch, t, time_steps=time_steps)
 
         loss.backward()
         optimizer.step()
@@ -67,5 +67,5 @@ for epoch in tqdm(range(epochs)):
         data_tq.set_description(f'loss={loss.item()}')
 
     torch.save(model.state_dict(), f"./model_{epoch}.bin")
-    samples = sample(model, time_steps, image_size=image_size, batch_size=25, channels=channels)
-    save_image(batch_noisy, str(results_folder / f'sample_{epoch}.png'), nrow=5)
+    samples = diffusion.sample(model, time_steps, image_size=image_size, batch_size=25, channels=channels)
+    save_image(torch.from_numpy(samples[-1]), str(results_folder / f'sample_{epoch}.png'), nrow=5)
