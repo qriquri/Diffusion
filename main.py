@@ -30,7 +30,7 @@ def transforms_data(examples):
     return examples
 
 transformed_dataset = dataset.with_transform(transforms_data).remove_columns("label")
-dataloader = DataLoader(transformed_dataset["train"], batch_size=batch_size, pin_memory=True, num_workers=0, shuffle=True)
+dataloader = DataLoader(transformed_dataset["train"], batch_size=batch_size, pin_memory=True, num_workers=2, shuffle=True)
 
 results_folder = Path("./results")
 results_folder.mkdir(exist_ok=True)
