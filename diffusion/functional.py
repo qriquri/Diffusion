@@ -41,7 +41,7 @@ def q_sample(
 
 
 def compute_noisy_image(x_start: torch.Tensor, time_steps):
-    betas = linear_beta_schedule(time_steps=time_steps.item())
+    betas = linear_beta_schedule(time_steps=time_steps.item()).to(device=x_start.device)
 
     alphas = 1.0 - betas
 
@@ -49,7 +49,7 @@ def compute_noisy_image(x_start: torch.Tensor, time_steps):
 
     sqrt_alphas_cumprod = torch.sqrt(alphas_cumprod)
     sqrt_one_minus_alphas_cumpord = torch.sqrt(1.0 - alphas_cumprod)
-    x_noisy = q_sample(x_start, t, sqrt_alphas_cumprod, sqrt_one_minus_alphas_cumpord)
+    x_noisy = q_sample(x_start, time_steps, sqrt_alphas_cumprod, sqrt_one_minus_alphas_cumpord)
 
     return x_noisy
 
@@ -63,7 +63,7 @@ def p_losses(
     if noise is None:
         noise = torch.rand_like(x_start)
 
-    betas = linear_beta_schedule(time_steps=t.item())
+    betas = linear_beta_schedule(time_steps=t.item()).to(device=x_start.device)
 
     alphas = 1.0 - betas
 
@@ -83,7 +83,7 @@ def p_losses(
 
 @torch.no_grad()
 def p_sample(model: nn.Module, x: torch.Tensor, t: torch.Tensor, t_index):
-    betas = linear_beta_schedule(time_steps=t.item())
+    betas = linear_beta_schedule(time_steps=t.item()).to(device=x.device)
 
     alphas = 1.0 - betas
     alphas_cumprod = torch.cumprod(alphas, dim=0)
