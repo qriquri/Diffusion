@@ -38,9 +38,10 @@ results_folder.mkdir(exist_ok=True)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = Unet(
     dim=image_size,
+    init_dim=64,
     channels=channels,
     dim_multi=(1, 2, 4, 8),
-    resnet_block_groups=4,
+    resnet_block_groups=32,
 )
 summary(model)
 model.to(device)
@@ -48,9 +49,10 @@ model.to(device)
 diffusion = Diffusion(time_steps=time_steps, device=device)
 optimizer = Adam(model.parameters(), lr=2e-4)
 
-epochs = 50
+epochs = 800_000 // (50_000 // batch_size)
 for epoch in tqdm(range(epochs)):
     data_tq = tqdm(dataloader)
+    model.train()
     for step, batch in enumerate(data_tq):
         optimizer.zero_grad()
 
@@ -67,5 +69,6 @@ for epoch in tqdm(range(epochs)):
         data_tq.set_description(f'loss={loss.item()}')
 
     torch.save(model.state_dict(), f"./model_{epoch}.bin")
+    model.eval()
     samples = diffusion.sample(model, time_steps, image_size=image_size, batch_size=25, channels=channels)
     save_image(torch.from_numpy(samples[-1]), str(results_folder / f'sample_{epoch}.png'), nrow=5)

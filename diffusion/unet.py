@@ -9,6 +9,7 @@ import torch.nn.functional as F
 from einops import rearrange
 
 from .modules import (
+    ConvBlock,
     ResnetBlock,
     DownSampleConv,
     UpsampleConv,
@@ -25,12 +26,13 @@ class Unet(nn.Module):
     def __init__(
         self,
         dim,
-        init_dim=None,
+        init_dim=64,
         out_dim=None,
         dim_multi=(1, 2, 4, 8),
         channels=3,
         with_time_emb=True,
-        resnet_block_groups=8,
+        resnet_block_groups=32,
+        dropout=0.1
     ) -> None:
         super().__init__()
 
@@ -38,19 +40,19 @@ class Unet(nn.Module):
         init_dim = default(init_dim, dim // 3 * 2)
         self.init_conv = nn.Conv2d(channels, init_dim, 7, padding=7 // 2)
 
-        dims = [init_dim, *map(lambda m: dim * m, dim_multi)]
+        dims = [init_dim, *map(lambda m: init_dim * m, dim_multi)]
         in_out = list(
             zip(dims[:-1], dims[1:])
         )  # (input_dim, output_dim)というタプルのリストを作成する
 
-        resnet_block = partial(ResnetBlock, groups=resnet_block_groups)
+        resnet_block = partial(ResnetBlock, groups=resnet_block_groups, dropout=dropout)
 
         if with_time_emb:
-            time_dim = dim
+            time_dim = init_dim * 4
             self.time_mlp = nn.Sequential(
-                SinusoidalPositionEmbeddings(dim),
-                nn.Linear(dim, time_dim),
-                nn.GELU(),
+                SinusoidalPositionEmbeddings(init_dim),
+                nn.Linear(init_dim, time_dim),
+                nn.SiLU(),
                 nn.Linear(time_dim, time_dim),
             )
         else:
@@ -81,7 +83,7 @@ class Unet(nn.Module):
         self.mid_attn = Residual(PreNorm(mid_dim, Attention(mid_dim)))
         self.mid_block2 = resnet_block(mid_dim, mid_dim, time_emb_dim=time_dim)
 
-        for ind, (dim_in, dim_out) in enumerate(reversed(in_out[1:])):
+        for ind, (dim_in, dim_out) in enumerate(reversed(in_out)):
             is_last = ind >= (num_resolutions - 1)
             self.ups.append(
                 nn.ModuleList(
@@ -95,10 +97,7 @@ class Unet(nn.Module):
             )
 
         out_dim = default(out_dim, channels)
-        self.final_conv = nn.Sequential(
-            resnet_block(dim, dim),
-            nn.Conv2d(dim, out_dim, 1)
-        )
+        self.final_conv = ConvBlock(init_dim, channels, groups=8)
 
     def forward(self, x: torch.Tensor, time: torch.Tensor):
         x = self.init_conv(x)
