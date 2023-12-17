@@ -16,7 +16,7 @@ dataset = load_dataset("fashion_mnist")
 image_size = 28
 channels = 1
 batch_size = 128
-time_steps = 1000
+time_steps = 200
 
 transform = Compose([
     transforms.RandomHorizontalFlip(),
@@ -30,7 +30,7 @@ def transforms_data(examples):
     return examples
 
 transformed_dataset = dataset.with_transform(transforms_data).remove_columns("label")
-dataloader = DataLoader(transformed_dataset["train"], batch_size=batch_size, pin_memory=True, num_workers=0, shuffle=True)
+dataloader = DataLoader(transformed_dataset["train"], batch_size=batch_size, pin_memory=True, num_workers=2, shuffle=True)
 
 results_folder = Path("./results")
 results_folder.mkdir(exist_ok=True)
@@ -57,7 +57,7 @@ for epoch in tqdm(range(epochs)):
         batch = batch["pixel_values"].to(device)
 
         t = torch.randint(1, time_steps, (batch_size,), device=device).long()
-        loss = p_losses(model, batch, t)
+        loss = p_losses(model, batch, t, time_steps=time_steps)
 
         loss.backward()
         optimizer.step()
