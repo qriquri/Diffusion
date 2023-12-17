@@ -210,3 +210,4 @@ Temporary Items
 tmp/
 model/
 *.png
+*.bin

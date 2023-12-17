@@ -30,7 +30,7 @@ def transforms_data(examples):
     return examples
 
 transformed_dataset = dataset.with_transform(transforms_data).remove_columns("label")
-dataloader = DataLoader(transformed_dataset["train"], batch_size=batch_size, pin_memory=True, num_workers=2, shuffle=True)
+dataloader = DataLoader(transformed_dataset["train"], batch_size=batch_size, pin_memory=True, num_workers=0, shuffle=True)
 
 results_folder = Path("./results")
 results_folder.mkdir(exist_ok=True)
@@ -56,7 +56,7 @@ for epoch in tqdm(range(epochs)):
         batch_size = batch["pixel_values"].shape[0]
         batch = batch["pixel_values"].to(device)
 
-        t = torch.randint(1, time_steps, (1,), device=device).long()
+        t = torch.randint(1, time_steps, (batch_size,), device=device).long()
         loss = p_losses(model, batch, t)
 
         loss.backward()

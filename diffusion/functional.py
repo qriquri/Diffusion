@@ -40,8 +40,8 @@ def q_sample(
     return sqrt_alphas_cumprod_t * x_start + sqrt_one_minus_alphas_cumpord_t * noise
 
 
-def compute_noisy_image(x_start: torch.Tensor, time_steps):
-    betas = linear_beta_schedule(time_steps=time_steps.item()).to(device=x_start.device)
+def compute_noisy_image(x_start: torch.Tensor, t: torch.Tensor, time_steps):
+    betas = linear_beta_schedule(time_steps).to(device=x_start.device)
 
     alphas = 1.0 - betas
 
@@ -49,7 +49,7 @@ def compute_noisy_image(x_start: torch.Tensor, time_steps):
 
     sqrt_alphas_cumprod = torch.sqrt(alphas_cumprod)
     sqrt_one_minus_alphas_cumpord = torch.sqrt(1.0 - alphas_cumprod)
-    x_noisy = q_sample(x_start, time_steps, sqrt_alphas_cumprod, sqrt_one_minus_alphas_cumpord)
+    x_noisy = q_sample(x_start, t, sqrt_alphas_cumprod, sqrt_one_minus_alphas_cumpord)
 
     return x_noisy
 
@@ -59,11 +59,12 @@ def p_losses(
     x_start: torch.Tensor,
     t: torch.Tensor,
     noise: Optional[torch.Tensor] = None,
+    time_steps=1000,
 ):
     if noise is None:
         noise = torch.rand_like(x_start)
 
-    betas = linear_beta_schedule(time_steps=t.item()).to(device=x_start.device)
+    betas = linear_beta_schedule(time_steps).to(device=x_start.device)
 
     alphas = 1.0 - betas
 
@@ -82,13 +83,13 @@ def p_losses(
 
 
 @torch.no_grad()
-def p_sample(model: nn.Module, x: torch.Tensor, t: torch.Tensor, t_index):
-    betas = linear_beta_schedule(time_steps=t.item()).to(device=x.device)
+def p_sample(model: nn.Module, x: torch.Tensor, t: torch.Tensor, t_index, time_steps):
+    betas = linear_beta_schedule(time_steps).to(device=x.device)
 
     alphas = 1.0 - betas
     alphas_cumprod = torch.cumprod(alphas, dim=0)
     sqrt_one_minus_alphas_cumpord = torch.sqrt(1.0 - alphas_cumprod)
-    sqrt_recip_alphas = torch.sqrt(1.0 / alphas) # 標準偏差
+    sqrt_recip_alphas = torch.sqrt(1.0 / alphas)  # 標準偏差
     # beta_t
     betas_t = extract(betas, t, x.shape)
     # 1 - √\bar{α}_t
@@ -123,7 +124,7 @@ def p_sample_loop(model: nn.Module, shape, time_steps):
 
     for i in tqdm(reversed(range(1, time_steps)), total=time_steps):
         img = p_sample(
-            model, img, torch.full((1,), i, device=device, dtype=torch.long), i
+            model, img, torch.full((batch_size,), i, device=device, dtype=torch.long), i, time_steps=time_steps
         )
         imgs.append(img.cpu().numpy())
 
