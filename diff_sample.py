@@ -65,7 +65,7 @@ def compute_noisy_image(x_start: torch.Tensor, time_steps):
 
 def p_losses(denoise_model: nn.Module, x_start: torch.Tensor, t: torch.Tensor, noise: Optional[torch.Tensor] = None):
     if noise is None:
-        noise = torch.rand_like(x_start)
+        noise = torch.randn_like(x_start)
 
     betas = linear_beta_schedule(time_steps=t.item())
 
@@ -136,7 +136,7 @@ def p_sample(model:nn.Module, x:torch.Tensor, t: torch.Tensor, t_index):
         posterior_variance = betas * (1. - alphas_cumprod_prev) / (1. - alphas_cumprod)
         sqrt_recip_alphas = torch.sqrt(1./alphas)
         posterior_variance_t = extract(posterior_variance) # σ^2_tを計算
-        noise = torch.rand_like(x)
+        noise = torch.randn_like(x)
     
     return model_mean + torch.sqrt(posterior_variance_t) * noise
 
