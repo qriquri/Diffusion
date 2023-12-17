@@ -59,7 +59,7 @@ for epoch in tqdm(range(epochs)):
 
         t = torch.randint(1, time_steps, (batch_size,), device=device).long()
 
-        loss = diffusion.p_losses(model, batch, t, time_steps=time_steps)
+        loss = diffusion.p_losses(model, batch, t)
 
         loss.backward()
         optimizer.step()
