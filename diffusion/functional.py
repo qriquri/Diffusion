@@ -114,14 +114,14 @@ def p_sample(model: nn.Module, x: torch.Tensor, t: torch.Tensor, t_index):
 
 
 @torch.no_grad()
-def p_sample_loop(model: nn.Module, shape, timesteps):
+def p_sample_loop(model: nn.Module, shape, time_steps):
     device = next(model.parameters()).device
 
     batch_size = shape[0]
     img = torch.randn(shape, device=device)
     imgs = []
 
-    for i in tqdm(reversed(range(0, timesteps)), total=timesteps):
+    for i in tqdm(reversed(range(0, time_steps)), total=time_steps):
         img = p_sample(
             model, img, torch.full((batch_size,), i, device=device, dtype=torch.long), i
         )
