@@ -26,7 +26,7 @@ class Diffusion:
 
     def extract(self, a: torch.Tensor, t: torch.Tensor, x_shape):
         batch_size = t.shape[0]
-        out = a.gather(-1, t - 1)  # aの最後の次元 ⇒ timestepに対応するalphaを取ってくる
+        out = a.gather(-1, t)  # aの最後の次元 ⇒ timestepに対応するalphaを取ってくる
         return out.reshape(batch_size, *((1,) * (len(x_shape) - 1))).to(
             t.device
         )  # バッチサイズ x 1 x 1 x 1にreshape
@@ -113,7 +113,7 @@ class Diffusion:
         img = torch.randn(shape, device=device)
         imgs = []
 
-        for i in tqdm(reversed(range(1, self.time_steps)), total=self.time_steps):
+        for i in tqdm(reversed(range(0, self.time_steps)), total=self.time_steps):
             img = self.p_sample(
                 model,
                 img,

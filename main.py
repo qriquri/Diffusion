@@ -57,7 +57,7 @@ for epoch in tqdm(range(epochs)):
         batch_size = batch["pixel_values"].shape[0]
         batch = batch["pixel_values"].to(device)
 
-        t = torch.randint(1, time_steps, (batch_size,), device=device).long()
+        t = torch.randint(0, time_steps, (batch_size,), device=device).long()
 
         loss = diffusion.p_losses(model, batch, t)
 
