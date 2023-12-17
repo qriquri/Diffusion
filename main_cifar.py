@@ -39,7 +39,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 model = Unet(
     dim=image_size,
     channels=channels,
-    dim_multi=(1, 2, 4,),
+    dim_multi=(1, 2, 4, 8),
     resnet_block_groups=4,
 )
 summary(model)
@@ -48,7 +48,7 @@ model.to(device)
 diffusion = Diffusion(time_steps=time_steps, device=device)
 optimizer = Adam(model.parameters(), lr=1e-3)
 
-epochs = 100
+epochs = 50
 for epoch in tqdm(range(epochs)):
     data_tq = tqdm(dataloader)
     for step, batch in enumerate(data_tq):
