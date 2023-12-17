@@ -53,7 +53,7 @@ for epoch in tqdm(range(epochs)):
     for step, batch in enumerate(data_tq):
         optimizer.zero_grad()
 
-        batch_size = batch_size["pixel_values"].shape[0]
+        batch_size = batch["pixel_values"].shape[0]
         batch = batch["pixel_values"].to(device)
 
         t = torch.randint(0, time_steps, (batch_size,), device=device).long()
