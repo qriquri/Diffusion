@@ -25,8 +25,8 @@ transform = Compose([
 ])
 
 def transforms_data(examples):
-    examples["pixel_values"] = [transform(image) for image in examples["image"]]
-    del examples["image"]
+    examples["pixel_values"] = [transform(image) for image in examples["img"]]
+    del examples["img"]
     return examples
 
 transformed_dataset = dataset.with_transform(transforms_data).remove_columns("label")
